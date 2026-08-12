@@ -214,7 +214,6 @@ describe('World', () => {
 
     it('modifying blob genome does not affect archived record', () => {
       const blob = world.blobs[0]
-      const originalSpeed = blob.genome.speed
       const record = world.getCreatureRecord(blob.id)
 
       const archivedSpeed = record?.genome.speed

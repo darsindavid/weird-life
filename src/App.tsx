@@ -381,158 +381,257 @@ function App() {
     )
   }
 
-  return (
-    <main>
-      <header>
-        <div>
-          <h1>Weird Life</h1>
+  const selectedBlob =
+    selectedBlobId === null
+      ? null
+      : worldRef.current?.getBlobById(
+          selectedBlobId,
+        ) ?? null
 
-          <p>
-            A tiny world full of creatures
-            with questionable decision-making.
-          </p>
+  return (
+    <main className="app-shell">
+      <header className="app-header">
+        <div className="brand-group">
+          <div
+            className="brand-mark"
+            aria-hidden="true"
+          >
+            W
+          </div>
+
+          <div className="brand-text">
+            <span className="app-name">
+              Weird Life
+            </span>
+          </div>
         </div>
 
-        <div className="controls">
+        <div className="header-status">
+          <div
+            className="status-pill"
+            aria-live="polite"
+          >
+            <span
+              className={
+                running
+                  ? 'status-dot is-running'
+                  : 'status-dot is-paused'
+              }
+              aria-hidden="true"
+            />
+            <span>
+              {running
+                ? 'Running'
+                : 'Paused'}
+            </span>
+          </div>
+
+          <div
+            className="meta-pill"
+            title="How long the world has been running in simulation ticks."
+          >
+            <span>World age</span>
+            <strong>{tick}</strong>
+          </div>
+        </div>
+
+        <div className="header-controls">
           <button
+            type="button"
+            className="control-button primary"
             onClick={() =>
               setRunning(
                 (value) => !value,
               )
             }
           >
-            {running
-              ? 'Pause'
-              : 'Run'}
+            {running ? 'Pause' : 'Run'}
           </button>
 
           <button
+            type="button"
+            className="control-button secondary"
             onClick={resetWorld}
           >
             Reset
           </button>
 
-          <label>
-            Speed
+          <label className="speed-control">
+            <span>Speed</span>
 
-            <input
-              type="range"
-              min="1"
-              max="60"
-              value={simulationSpeed}
-              onChange={(event) =>
-                setSimulationSpeed(
-                  Number(
-                    event.target.value,
-                  ),
-                )
-              }
-            />
+            <div className="speed-row">
+              <input
+                type="range"
+                min="1"
+                max="60"
+                value={simulationSpeed}
+                onChange={(event) =>
+                  setSimulationSpeed(
+                    Number(
+                      event.target.value,
+                    ),
+                  )
+                }
+                aria-label="Simulation speed"
+              />
 
-            {simulationSpeed} TPS
+              <output>
+                {simulationSpeed} TPS
+              </output>
+            </div>
           </label>
         </div>
       </header>
 
-      <section className="stats">
-        <div>
-          <strong>
-            {population}
-          </strong>
+      <div className="workspace-shell">
+        <section
+          className="viewport-column"
+          aria-labelledby="world-heading"
+        >
+          <div className="viewport-topbar">
+            <div>
+              <span className="section-tag">
+                Observation
+              </span>
 
-          <span>
-            Population
-          </span>
-        </div>
+              <h2 id="world-heading">
+                The World
+              </h2>
+            </div>
 
-        <div>
-          <strong>
-            {foodCount}
-          </strong>
+            <p className="viewport-note">
+              Everything appears to be going
+              normally. Probably.
+            </p>
+          </div>
 
-          <span>
-            Food
-          </span>
-        </div>
+          <div
+            className="telemetry-bar"
+            aria-label="Simulation telemetry"
+          >
+            <div
+              className="telemetry-item"
+              title="The number of creatures currently alive in the world."
+            >
+              <span>Creatures alive</span>
+              <strong>{population}</strong>
+            </div>
 
-        <div>
-          <strong>{tick}</strong>
+            <div
+              className="telemetry-item"
+              title="The amount of food available across the world."
+            >
+              <span>Food available</span>
+              <strong>{foodCount}</strong>
+            </div>
 
-          <span>Ticks</span>
-        </div>
+            <div
+              className="telemetry-item"
+              title="How long the world has been running in simulation ticks."
+            >
+              <span>World age</span>
+              <strong>{tick}</strong>
+            </div>
 
-        <div>
-          <strong>
-            {births}
-          </strong>
+            <div
+              className="telemetry-item"
+              title="How many creatures have been born since the simulation started."
+            >
+              <span>Births</span>
+              <strong>{births}</strong>
+            </div>
 
-          <span>Births</span>
-        </div>
+            <div
+              className="telemetry-item"
+              title="How many creatures have died since the simulation started."
+            >
+              <span>Deaths</span>
+              <strong>{deaths}</strong>
+            </div>
+          </div>
 
-        <div>
-          <strong>
-            {deaths}
-          </strong>
+          <div className="canvas-shell">
+            <canvas
+              ref={canvasRef}
+              width={WORLD_WIDTH}
+              height={WORLD_HEIGHT}
+              onClick={handleCanvasClick}
+              aria-label="Simulation world canvas"
+            />
+          </div>
 
-          <span>Deaths</span>
-        </div>
-      </section>
+          <div
+            className="traits-panel"
+            aria-labelledby="traits-title"
+          >
+            <div className="traits-header">
+              <h3 id="traits-title">
+                Population traits
+              </h3>
 
-      <canvas
-        ref={canvasRef}
-        width={WORLD_WIDTH}
-        height={WORLD_HEIGHT}
-        onClick={handleCanvasClick}
-      />
+              <span className="mini-label">
+                Live averages
+              </span>
+            </div>
 
-      <CreaturePanel
-        blob={
-          selectedBlobId === null
-            ? null
-            : worldRef.current?.getBlobById(
-                selectedBlobId,
-              ) ?? null
-        }
-        onClose={() =>
-          setSelectedBlobId(null)
-        }
-      />
+            <div className="traits-list">
+              <div
+                className="trait-item"
+                title="Movement speed = how quickly creatures can move."
+              >
+                <span>Movement speed</span>
+                <strong>
+                  {averageSpeed.toFixed(2)}
+                </strong>
+              </div>
 
-      <section className="traits">
-        <h2>
-          Population Traits
-        </h2>
+              <div
+                className="trait-item"
+                title="Food detection range = how far creatures can detect food."
+              >
+                <span>Food detection</span>
+                <strong>
+                  {averageVision.toFixed(0)}
+                </strong>
+              </div>
 
-        <div>
-          <span>
-            Average speed
-          </span>
+              <div
+                className="trait-item"
+                title="Energy use = energy consumed each simulation step."
+              >
+                <span>Energy use</span>
+                <strong>
+                  {averageMetabolism.toFixed(3)}
+                </strong>
+              </div>
+            </div>
+          </div>
+        </section>
 
-          <strong>
-            {averageSpeed.toFixed(2)}
-          </strong>
-        </div>
+        <aside className="inspector-column">
+          {selectedBlob ? (
+            <CreaturePanel
+              blob={selectedBlob}
+              onClose={() =>
+                setSelectedBlobId(null)
+              }
+            />
+          ) : (
+            <div className="empty-state">
+              <span className="section-tag">
+                Inspector
+              </span>
 
-        <div>
-          <span>
-            Average vision
-          </span>
+              <h3>Select a creature</h3>
 
-          <strong>
-            {averageVision.toFixed(0)}
-          </strong>
-        </div>
-
-        <div>
-          <span>
-            Average metabolism
-          </span>
-
-          <strong>
-            {averageMetabolism.toFixed(3)}
-          </strong>
-        </div>
-      </section>
+              <p>
+                Click any creature in the world to
+                inspect its traits and lineage.
+              </p>
+            </div>
+          )}
+        </aside>
+      </div>
     </main>
   )
 }
