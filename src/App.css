@@ -1,13 +1,15 @@
 main {
   min-height: 100vh;
   padding: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-.header {
-  width: 800px;
+header {
   display: flex;
   justify-content: space-between;
   align-items: end;
+  gap: 30px;
   margin-bottom: 20px;
 }
 
@@ -21,19 +23,97 @@ p {
   color: #666;
 }
 
-.stats {
+.controls {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 20px;
+}
+
+button {
+  padding: 8px 14px;
+  border: 1px solid #222;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #f2f2f2;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.9rem;
 }
 
-.stats span {
-  padding: 6px 10px;
+.stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stats div {
+  min-width: 100px;
+  padding: 10px 14px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 8px;
+}
+
+.stats strong {
+  display: block;
+  font-size: 1.3rem;
+}
+
+.stats span {
+  color: #666;
+  font-size: 0.8rem;
 }
 
 canvas {
   display: block;
+  width: 800px;
+  max-width: 100%;
   border: 1px solid #222;
+  border-radius: 8px;
+}
+
+.traits {
+  margin-top: 20px;
+  width: 800px;
+  max-width: 100%;
+}
+
+.traits h2 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.traits h2 {
+  width: 100%;
+}
+
+.traits div {
+  flex: 1;
+  min-width: 150px;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.traits span {
+  display: block;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.traits strong {
+  font-size: 1.1rem;
 }

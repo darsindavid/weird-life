@@ -1,4 +1,9 @@
 import { Food } from './Food'
+import {
+  createRandomGenome,
+  mutateGenome,
+  type Genome,
+} from './Genome'
 
 export class Blob {
   x: number
@@ -7,26 +12,30 @@ export class Blob {
   vy: number
   energy: number
   age: number
+  genome: Genome
 
-  private readonly maxSpeed = 1.5
-  private readonly energyDrain = 0.02
-  private readonly foodDetectionRange = 120
   private readonly eatingDistance = 8
 
-  constructor(x: number, y: number) {
+  constructor(
+    x: number,
+    y: number,
+    genome: Genome = createRandomGenome(),
+    energy = 100,
+  ) {
     this.x = x
     this.y = y
 
     this.vx = (Math.random() - 0.5) * 2
     this.vy = (Math.random() - 0.5) * 2
 
-    this.energy = 100
+    this.energy = energy
     this.age = 0
+    this.genome = genome
   }
 
   update(width: number, height: number, foods: Food[]) {
     this.age += 1
-    this.energy -= this.energyDrain
+    this.energy -= this.genome.metabolism
 
     const nearestFood = this.findNearestFood(foods)
 
@@ -46,7 +55,7 @@ export class Blob {
 
   private findNearestFood(foods: Food[]) {
     let nearestFood: Food | null = null
-    let nearestDistance = this.foodDetectionRange
+    let nearestDistance = this.genome.vision
 
     for (const food of foods) {
       const distance = this.distanceTo(food.x, food.y)
@@ -85,9 +94,9 @@ export class Blob {
   private limitSpeed() {
     const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy)
 
-    if (speed > this.maxSpeed) {
-      this.vx = (this.vx / speed) * this.maxSpeed
-      this.vy = (this.vy / speed) * this.maxSpeed
+    if (speed > this.genome.speed) {
+      this.vx = (this.vx / speed) * this.genome.speed
+      this.vy = (this.vy / speed) * this.genome.speed
     }
   }
 
@@ -117,6 +126,25 @@ export class Blob {
         foods.splice(foodIndex, 1)
       }
     }
+  }
+
+  canReproduce() {
+    return this.energy >= this.genome.reproductionThreshold
+  }
+
+  reproduce() {
+    const offspringEnergy = this.energy / 2
+
+    this.energy = offspringEnergy
+
+    const offspringGenome = mutateGenome(this.genome)
+
+    return new Blob(
+      this.x + (Math.random() - 0.5) * 10,
+      this.y + (Math.random() - 0.5) * 10,
+      offspringGenome,
+      offspringEnergy,
+    )
   }
 
   private distanceTo(x: number, y: number) {
