@@ -1,0 +1,18 @@
+main {
+  min-height: 100vh;
+  padding: 40px;
+}
+
+h1 {
+  margin-bottom: 8px;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+canvas {
+  display: block;
+  border: 1px solid #222;
+}
