@@ -33,10 +33,16 @@ export class Blob {
     this.genome = genome
   }
 
-  update(width: number, height: number, foods: Food[]) {
+  update(
+  width: number,
+  height: number,
+  foods: Food[],
+  energyCostMultiplier = 1,
+) {
     this.age += 1
 
-    this.energy -= this.getEnergyCost()
+    this.energy -=
+  this.getEnergyCost() * energyCostMultiplier
 
     const nearestFood = this.findNearestFood(foods)
 

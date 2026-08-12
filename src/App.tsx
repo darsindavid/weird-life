@@ -76,6 +76,37 @@ function App() {
         WORLD_WIDTH,
         WORLD_HEIGHT,
       )
+      for (
+  const region of world.environment.regions
+) {
+  if (region.type === 'meadow') {
+    context.fillStyle = '#e8f5e9'
+  } else if (region.type === 'barren') {
+    context.fillStyle = '#f5f5f5'
+  } else {
+    context.fillStyle = '#e8f0f0'
+  }
+
+  context.fillRect(
+    region.x,
+    region.y,
+    region.width,
+    region.height,
+  )
+}
+context.strokeStyle = '#cccccc'
+context.lineWidth = 1
+
+for (
+  const region of world.environment.regions
+) {
+  context.strokeRect(
+    region.x,
+    region.y,
+    region.width,
+    region.height,
+  )
+}
 
       for (const food of world.foods) {
         context.beginPath()
@@ -92,20 +123,33 @@ function App() {
       }
 
       for (const blob of world.blobs) {
-        const radius = 4 + blob.genome.speed * 2
+  const radius = 4 + blob.genome.speed * 2
 
-        context.beginPath()
+  const region = world.getRegionAt(
+    blob.x,
+    blob.y,
+  )
 
-        context.arc(
-          blob.x,
-          blob.y,
-          radius,
-          0,
-          Math.PI * 2,
-        )
+  if (region?.type === 'swamp') {
+    context.fillStyle = '#6b8e6b'
+  } else if (region?.type === 'barren') {
+    context.fillStyle = '#777777'
+  } else {
+    context.fillStyle = '#222222'
+  }
 
-        context.fill()
-      }
+  context.beginPath()
+
+  context.arc(
+    blob.x,
+    blob.y,
+    radius,
+    0,
+    Math.PI * 2,
+  )
+
+  context.fill()
+}
 
       animationFrameId = requestAnimationFrame(animate)
     }

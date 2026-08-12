@@ -4,6 +4,7 @@ import {
   DEFAULT_ENVIRONMENT,
   type Environment,
 } from './Environment'
+import type { Region } from './Region'
 
 export class World {
   width: number
@@ -84,11 +85,17 @@ export class World {
     const offspring: Blob[] = []
 
     for (const blob of this.blobs) {
-      blob.update(
-        this.width,
-        this.height,
-        this.foods,
-      )
+      const region = this.getRegionAt(
+  blob.x,
+  blob.y,
+)
+
+blob.update(
+  this.width,
+  this.height,
+  this.foods,
+  region?.energyCostMultiplier ?? 1,
+)
 
       if (
         blob.canReproduce() &&
@@ -161,14 +168,63 @@ export class World {
         0,
       ) / this.blobs.length
     )
+    
+  }
+getRegionAt(x: number, y: number): Region | null {
+  return (
+    this.environment.regions.find(
+      (region) =>
+        x >= region.x &&
+        x < region.x + region.width &&
+        y >= region.y &&
+        y < region.y + region.height,
+    ) ?? null
+  )
+}
+  private spawnFood() {
+  if (
+    Math.random() >=
+    this.environment.foodSpawnChance
+  ) {
+    return
   }
 
-  private spawnFood() {
-    if (
-      Math.random() <
-      this.environment.foodSpawnChance
-    ) {
-      this.addRandomFood()
-    }
+  const region =
+    this.environment.regions[
+      Math.floor(
+        Math.random() *
+          this.environment.regions.length,
+      )
+    ]
+
+  const adjustedChance =
+    Math.random() <
+    region.foodSpawnMultiplier
+
+  if (!adjustedChance) {
+    return
   }
+
+  this.addFoodToRegion(region)
+}
+private addFoodToRegion(region: Region) {
+  if (
+    this.foods.length >=
+    this.environment.maxFood
+  ) {
+    return
+  }
+
+  const food = new Food(
+    region.x +
+      Math.random() * region.width,
+
+    region.y +
+      Math.random() * region.height,
+
+    this.environment.foodEnergy,
+  )
+
+  this.foods.push(food)
+}
 }
