@@ -1,27 +1,36 @@
 import { Blob } from './Blob'
 import { Food } from './Food'
+import {
+  DEFAULT_ENVIRONMENT,
+  type Environment,
+} from './Environment'
 
 export class World {
   width: number
   height: number
+
   blobs: Blob[]
   foods: Food[]
 
-  generation: number
+  tick: number
   births: number
   deaths: number
 
-  private readonly foodSpawnChance = 0.12
-  private readonly maxFood = 200
-  private readonly maxPopulation = 200
+  readonly environment: Environment
 
-  constructor(width: number, height: number, initialPopulation: number) {
-    this.width = width
-    this.height = height
+  constructor(
+    environment: Environment = DEFAULT_ENVIRONMENT,
+    initialPopulation = 50,
+  ) {
+    this.environment = environment
+
+    this.width = environment.width
+    this.height = environment.height
+
     this.blobs = []
     this.foods = []
 
-    this.generation = 0
+    this.tick = 0
     this.births = 0
     this.deaths = 0
 
@@ -35,7 +44,10 @@ export class World {
   }
 
   addRandomBlob() {
-    if (this.blobs.length >= this.maxPopulation) {
+    if (
+      this.blobs.length >=
+      this.environment.maxPopulation
+    ) {
       return
     }
 
@@ -48,33 +60,47 @@ export class World {
   }
 
   addRandomFood() {
-    if (this.foods.length >= this.maxFood) {
+    if (
+      this.foods.length >=
+      this.environment.maxFood
+    ) {
       return
     }
 
     const food = new Food(
       Math.random() * this.width,
       Math.random() * this.height,
+      this.environment.foodEnergy,
     )
 
     this.foods.push(food)
   }
 
   update() {
-    this.generation += 1
+    this.tick += 1
 
     this.spawnFood()
 
     const offspring: Blob[] = []
 
     for (const blob of this.blobs) {
-      blob.update(this.width, this.height, this.foods)
+      blob.update(
+        this.width,
+        this.height,
+        this.foods,
+      )
 
       if (
         blob.canReproduce() &&
-        this.blobs.length + offspring.length < this.maxPopulation
+        this.blobs.length +
+          offspring.length <
+          this.environment.maxPopulation
       ) {
-        offspring.push(blob.reproduce())
+        offspring.push(
+          blob.reproduce(
+            this.environment.mutationStrength,
+          ),
+        )
       }
     }
 
@@ -82,11 +108,17 @@ export class World {
 
     this.births += offspring.length
 
-    const populationBeforeDeath = this.blobs.length
+    const populationBeforeDeath =
+      this.blobs.length
 
-    this.blobs = this.blobs.filter((blob) => blob.isAlive())
+    this.blobs =
+      this.blobs.filter((blob) =>
+        blob.isAlive(),
+      )
 
-    this.deaths += populationBeforeDeath - this.blobs.length
+    this.deaths +=
+      populationBeforeDeath -
+      this.blobs.length
   }
 
   getAverageSpeed() {
@@ -94,12 +126,13 @@ export class World {
       return 0
     }
 
-    const total = this.blobs.reduce(
-      (sum, blob) => sum + blob.genome.speed,
-      0,
+    return (
+      this.blobs.reduce(
+        (sum, blob) =>
+          sum + blob.genome.speed,
+        0,
+      ) / this.blobs.length
     )
-
-    return total / this.blobs.length
   }
 
   getAverageVision() {
@@ -107,12 +140,13 @@ export class World {
       return 0
     }
 
-    const total = this.blobs.reduce(
-      (sum, blob) => sum + blob.genome.vision,
-      0,
+    return (
+      this.blobs.reduce(
+        (sum, blob) =>
+          sum + blob.genome.vision,
+        0,
+      ) / this.blobs.length
     )
-
-    return total / this.blobs.length
   }
 
   getAverageMetabolism() {
@@ -120,16 +154,20 @@ export class World {
       return 0
     }
 
-    const total = this.blobs.reduce(
-      (sum, blob) => sum + blob.genome.metabolism,
-      0,
+    return (
+      this.blobs.reduce(
+        (sum, blob) =>
+          sum + blob.genome.metabolism,
+        0,
+      ) / this.blobs.length
     )
-
-    return total / this.blobs.length
   }
 
   private spawnFood() {
-    if (Math.random() < this.foodSpawnChance) {
+    if (
+      Math.random() <
+      this.environment.foodSpawnChance
+    ) {
       this.addRandomFood()
     }
   }

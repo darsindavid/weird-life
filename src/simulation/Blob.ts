@@ -35,7 +35,8 @@ export class Blob {
 
   update(width: number, height: number, foods: Food[]) {
     this.age += 1
-    this.energy -= this.genome.metabolism
+
+    this.energy -= this.getEnergyCost()
 
     const nearestFood = this.findNearestFood(foods)
 
@@ -51,6 +52,25 @@ export class Blob {
     this.handleBoundaries(width, height)
 
     this.tryToEat(nearestFood, foods)
+  }
+
+  private getEnergyCost() {
+    const movementCost =
+      Math.abs(this.vx) * 0.012 +
+      Math.abs(this.vy) * 0.012
+
+    const speedCost =
+      this.genome.speed * 0.006
+
+    const visionCost =
+      this.genome.vision * 0.00004
+
+    return (
+      this.genome.metabolism +
+      movementCost +
+      speedCost +
+      visionCost
+    )
   }
 
   private findNearestFood(foods: Food[]) {
@@ -92,32 +112,52 @@ export class Blob {
   }
 
   private limitSpeed() {
-    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy)
+    const speed = Math.sqrt(
+      this.vx * this.vx + this.vy * this.vy,
+    )
 
     if (speed > this.genome.speed) {
-      this.vx = (this.vx / speed) * this.genome.speed
-      this.vy = (this.vy / speed) * this.genome.speed
+      this.vx =
+        (this.vx / speed) * this.genome.speed
+
+      this.vy =
+        (this.vy / speed) * this.genome.speed
     }
   }
 
-  private handleBoundaries(width: number, height: number) {
+  private handleBoundaries(
+    width: number,
+    height: number,
+  ) {
     if (this.x <= 0 || this.x >= width) {
       this.vx *= -1
-      this.x = Math.max(0, Math.min(this.x, width))
+      this.x = Math.max(
+        0,
+        Math.min(this.x, width),
+      )
     }
 
     if (this.y <= 0 || this.y >= height) {
       this.vy *= -1
-      this.y = Math.max(0, Math.min(this.y, height))
+      this.y = Math.max(
+        0,
+        Math.min(this.y, height),
+      )
     }
   }
 
-  private tryToEat(food: Food | null, foods: Food[]) {
+  private tryToEat(
+    food: Food | null,
+    foods: Food[],
+  ) {
     if (!food) {
       return
     }
 
-    if (this.distanceTo(food.x, food.y) <= this.eatingDistance) {
+    if (
+      this.distanceTo(food.x, food.y) <=
+      this.eatingDistance
+    ) {
       this.energy += food.energy
 
       const foodIndex = foods.indexOf(food)
@@ -129,15 +169,21 @@ export class Blob {
   }
 
   canReproduce() {
-    return this.energy >= this.genome.reproductionThreshold
+    return (
+      this.energy >=
+      this.genome.reproductionThreshold
+    )
   }
 
-  reproduce() {
+  reproduce(mutationStrength: number) {
     const offspringEnergy = this.energy / 2
 
     this.energy = offspringEnergy
 
-    const offspringGenome = mutateGenome(this.genome)
+    const offspringGenome = mutateGenome(
+      this.genome,
+      mutationStrength,
+    )
 
     return new Blob(
       this.x + (Math.random() - 0.5) * 10,

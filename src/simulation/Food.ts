@@ -3,7 +3,7 @@ export class Food {
   y: number
   energy: number
 
-  constructor(x: number, y: number, energy = 25) {
+  constructor(x: number, y: number, energy: number) {
     this.x = x
     this.y = y
     this.energy = energy

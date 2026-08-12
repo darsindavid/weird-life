@@ -14,21 +14,42 @@ export function createRandomGenome(): Genome {
   }
 }
 
-export function mutateGenome(parent: Genome): Genome {
+export function mutateGenome(
+  parent: Genome,
+  mutationStrength = 1,
+): Genome {
   return {
-    speed: Math.max(0.5, parent.speed + randomMutation(0.15)),
-    vision: Math.max(40, parent.vision + randomMutation(15)),
-    metabolism: Math.max(
-      0.005,
-      parent.metabolism + randomMutation(0.005),
+    speed: clamp(
+      parent.speed + randomMutation(0.15 * mutationStrength),
+      0.5,
+      2.5,
     ),
-    reproductionThreshold: Math.max(
+
+    vision: clamp(
+      parent.vision + randomMutation(15 * mutationStrength),
+      40,
+      300,
+    ),
+
+    metabolism: clamp(
+      parent.metabolism + randomMutation(0.005 * mutationStrength),
+      0.005,
+      0.06,
+    ),
+
+    reproductionThreshold: clamp(
+      parent.reproductionThreshold +
+        randomMutation(10 * mutationStrength),
       100,
-      parent.reproductionThreshold + randomMutation(10),
+      220,
     ),
   }
 }
 
 function randomMutation(amount: number) {
   return (Math.random() - 0.5) * 2 * amount
+}
+
+function clamp(value: number, minimum: number, maximum: number) {
+  return Math.max(minimum, Math.min(value, maximum))
 }

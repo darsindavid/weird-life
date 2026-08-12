@@ -1,26 +1,31 @@
 import { useEffect, useRef, useState } from 'react'
+import { DEFAULT_ENVIRONMENT } from './simulation/Environment'
 import { World } from './simulation/World'
 import './App.css'
 
 const WORLD_WIDTH = 800
 const WORLD_HEIGHT = 500
-const SIMULATION_TPS = 20
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const worldRef = useRef<World | null>(null)
 
   const [running, setRunning] = useState(true)
   const [simulationSpeed, setSimulationSpeed] = useState(20)
 
   const [population, setPopulation] = useState(0)
   const [foodCount, setFoodCount] = useState(0)
-  const [generation, setGeneration] = useState(0)
+  const [tick, setTick] = useState(0)
   const [births, setBirths] = useState(0)
   const [deaths, setDeaths] = useState(0)
 
   const [averageSpeed, setAverageSpeed] = useState(0)
   const [averageVision, setAverageVision] = useState(0)
   const [averageMetabolism, setAverageMetabolism] = useState(0)
+
+  if (!worldRef.current) {
+    worldRef.current = new World(DEFAULT_ENVIRONMENT, 50)
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -35,22 +40,27 @@ function App() {
       return
     }
 
-    const world = new World(WORLD_WIDTH, WORLD_HEIGHT, 50)
-
     let animationFrameId: number
     let lastSimulationTime = performance.now()
 
     const animate = (currentTime: number) => {
-      if (running) {
-        const simulationInterval = 1000 / simulationSpeed
+      const world = worldRef.current
 
-        if (currentTime - lastSimulationTime >= simulationInterval) {
+      if (!world) {
+        return
+      }
+
+      if (running) {
+        const interval = 1000 / simulationSpeed
+
+        if (currentTime - lastSimulationTime >= interval) {
           world.update()
+
           lastSimulationTime = currentTime
 
           setPopulation(world.blobs.length)
           setFoodCount(world.foods.length)
-          setGeneration(world.generation)
+          setTick(world.tick)
           setBirths(world.births)
           setDeaths(world.deaths)
 
@@ -60,11 +70,24 @@ function App() {
         }
       }
 
-      context.clearRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
+      context.clearRect(
+        0,
+        0,
+        WORLD_WIDTH,
+        WORLD_HEIGHT,
+      )
 
       for (const food of world.foods) {
         context.beginPath()
-        context.arc(food.x, food.y, 3, 0, Math.PI * 2)
+
+        context.arc(
+          food.x,
+          food.y,
+          3,
+          0,
+          Math.PI * 2,
+        )
+
         context.fill()
       }
 
@@ -72,7 +95,15 @@ function App() {
         const radius = 4 + blob.genome.speed * 2
 
         context.beginPath()
-        context.arc(blob.x, blob.y, radius, 0, Math.PI * 2)
+
+        context.arc(
+          blob.x,
+          blob.y,
+          radius,
+          0,
+          Math.PI * 2,
+        )
+
         context.fill()
       }
 
@@ -86,33 +117,67 @@ function App() {
     }
   }, [running, simulationSpeed])
 
+  const resetWorld = () => {
+    const newWorld = new World(
+      DEFAULT_ENVIRONMENT,
+      50,
+    )
+
+    worldRef.current = newWorld
+
+    setPopulation(newWorld.blobs.length)
+    setFoodCount(newWorld.foods.length)
+    setTick(newWorld.tick)
+    setBirths(newWorld.births)
+    setDeaths(newWorld.deaths)
+
+    setAverageSpeed(newWorld.getAverageSpeed())
+    setAverageVision(newWorld.getAverageVision())
+    setAverageMetabolism(
+      newWorld.getAverageMetabolism(),
+    )
+  }
+
   return (
     <main>
       <header>
         <div>
           <h1>Weird Life</h1>
+
           <p>
-            A tiny world full of creatures with questionable
-            decision-making.
+            A tiny world full of creatures
+            with questionable decision-making.
           </p>
         </div>
 
         <div className="controls">
-          <button onClick={() => setRunning((value) => !value)}>
+          <button
+            onClick={() =>
+              setRunning((value) => !value)
+            }
+          >
             {running ? 'Pause' : 'Run'}
+          </button>
+
+          <button onClick={resetWorld}>
+            Reset
           </button>
 
           <label>
             Speed
+
             <input
               type="range"
               min="1"
               max="60"
               value={simulationSpeed}
               onChange={(event) =>
-                setSimulationSpeed(Number(event.target.value))
+                setSimulationSpeed(
+                  Number(event.target.value),
+                )
               }
             />
+
             {simulationSpeed} TPS
           </label>
         </div>
@@ -130,8 +195,8 @@ function App() {
         </div>
 
         <div>
-          <strong>{generation}</strong>
-          <span>Generation</span>
+          <strong>{tick}</strong>
+          <span>Ticks</span>
         </div>
 
         <div>
@@ -156,17 +221,23 @@ function App() {
 
         <div>
           <span>Average speed</span>
-          <strong>{averageSpeed.toFixed(2)}</strong>
+          <strong>
+            {averageSpeed.toFixed(2)}
+          </strong>
         </div>
 
         <div>
           <span>Average vision</span>
-          <strong>{averageVision.toFixed(0)}</strong>
+          <strong>
+            {averageVision.toFixed(0)}
+          </strong>
         </div>
 
         <div>
           <span>Average metabolism</span>
-          <strong>{averageMetabolism.toFixed(3)}</strong>
+          <strong>
+            {averageMetabolism.toFixed(3)}
+          </strong>
         </div>
       </section>
     </main>
