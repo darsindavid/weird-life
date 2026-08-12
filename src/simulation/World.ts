@@ -5,6 +5,7 @@ import {
   type Environment,
 } from './Environment'
 import type { Region } from './Region'
+import type { CreatureRecord } from './CreatureRecord'
 
 export class World {
   width: number
@@ -19,6 +20,7 @@ export class World {
 
   readonly environment: Environment
   private nextBlobId: number
+  private archive: Map<number, CreatureRecord>
 
   constructor(
     environment: Environment = DEFAULT_ENVIRONMENT,
@@ -36,6 +38,7 @@ export class World {
     this.births = 0
     this.deaths = 0
     this.nextBlobId = 1
+    this.archive = new Map()
 
     for (let i = 0; i < initialPopulation; i++) {
       this.addRandomBlob()
@@ -56,11 +59,25 @@ export class World {
 
     const blob = new Blob(
       this.nextBlobId,
+      
       Math.random() * this.width,
       Math.random() * this.height,
     )
 
     this.nextBlobId += 1
+    this.archive.set(
+  blob.id,
+  {
+    id: blob.id,
+    parentId: blob.parentId,
+    generation: blob.generation,
+    genome: { ...blob.genome },
+    birthTick: this.tick,
+    deathTick: null,
+    children: 0,
+    foodEaten: 0,
+  },
+)
 
     this.blobs.push(blob)
   }
@@ -101,6 +118,14 @@ export class World {
         this.foods,
         region?.energyCostMultiplier ?? 1,
       )
+      const record = this.archive.get(
+  blob.id,
+)
+
+if (record) {
+  record.children = blob.children
+  record.foodEaten = blob.foodEaten
+}
 
       if (
         blob.canReproduce() &&
@@ -108,14 +133,28 @@ export class World {
           offspring.length <
           this.environment.maxPopulation
       ) {
-        offspring.push(
-          blob.reproduce(
-            this.nextBlobId,
-            this.environment.mutationStrength,
-          ),
-        )
+        const child = blob.reproduce(
+  this.nextBlobId,
+  this.environment.mutationStrength,
+)
 
-        this.nextBlobId += 1
+this.nextBlobId += 1
+
+offspring.push(child)
+
+this.archive.set(
+  child.id,
+  {
+    id: child.id,
+    parentId: child.parentId,
+    generation: child.generation,
+    genome: { ...child.genome },
+    birthTick: this.tick,
+    deathTick: null,
+    children: 0,
+    foodEaten: 0,
+  },
+)
       }
     }
 
@@ -123,16 +162,32 @@ export class World {
 
     this.births += offspring.length
 
-    const populationBeforeDeath =
-      this.blobs.length
+    const survivors: Blob[] = []
 
-    this.blobs = this.blobs.filter(
-      (blob) => blob.isAlive(),
-    )
+for (const blob of this.blobs) {
+  if (blob.isAlive()) {
+    survivors.push(blob)
+    continue
+  }
 
-    this.deaths +=
-      populationBeforeDeath -
-      this.blobs.length
+  const record =
+    this.archive.get(blob.id)
+
+  if (record) {
+    record.deathTick =
+      this.tick
+
+    record.children =
+      blob.children
+
+    record.foodEaten =
+      blob.foodEaten
+  }
+
+  this.deaths += 1
+}
+
+this.blobs = survivors
   }
 
   getAverageSpeed() {
@@ -247,4 +302,16 @@ export class World {
 
     this.foods.push(food)
   }
+  getCreatureRecord(
+  id: number,
+) {
+  return (
+    this.archive.get(id) ?? null
+  )
+}
+getCreatureHistory() {
+  return Array.from(
+    this.archive.values(),
+  )
+}
 }
