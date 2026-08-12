@@ -1,30 +1,62 @@
-import { useEffect, useRef, useState } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from 'react'
 import { DEFAULT_ENVIRONMENT } from './simulation/Environment'
 import { World } from './simulation/World'
+import CreaturePanel from './CreaturePanel'
 import './App.css'
 
 const WORLD_WIDTH = 800
 const WORLD_HEIGHT = 500
 
 function App() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const worldRef = useRef<World | null>(null)
+  const canvasRef =
+    useRef<HTMLCanvasElement>(null)
 
-  const [running, setRunning] = useState(true)
-  const [simulationSpeed, setSimulationSpeed] = useState(20)
+  const worldRef =
+    useRef<World | null>(null)
 
-  const [population, setPopulation] = useState(0)
-  const [foodCount, setFoodCount] = useState(0)
-  const [tick, setTick] = useState(0)
-  const [births, setBirths] = useState(0)
-  const [deaths, setDeaths] = useState(0)
+  const [running, setRunning] =
+    useState(true)
 
-  const [averageSpeed, setAverageSpeed] = useState(0)
-  const [averageVision, setAverageVision] = useState(0)
-  const [averageMetabolism, setAverageMetabolism] = useState(0)
+  const [simulationSpeed, setSimulationSpeed] =
+    useState(20)
+
+  const [population, setPopulation] =
+    useState(0)
+
+  const [foodCount, setFoodCount] =
+    useState(0)
+
+  const [tick, setTick] =
+    useState(0)
+
+  const [births, setBirths] =
+    useState(0)
+
+  const [deaths, setDeaths] =
+    useState(0)
+
+  const [averageSpeed, setAverageSpeed] =
+    useState(0)
+
+  const [averageVision, setAverageVision] =
+    useState(0)
+
+  const [averageMetabolism, setAverageMetabolism] =
+    useState(0)
+
+  const [selectedBlobId, setSelectedBlobId] =
+    useState<number | null>(null)
 
   if (!worldRef.current) {
-    worldRef.current = new World(DEFAULT_ENVIRONMENT, 50)
+    worldRef.current = new World(
+      DEFAULT_ENVIRONMENT,
+      50,
+    )
   }
 
   useEffect(() => {
@@ -41,9 +73,12 @@ function App() {
     }
 
     let animationFrameId: number
-    let lastSimulationTime = performance.now()
+    let lastSimulationTime =
+      performance.now()
 
-    const animate = (currentTime: number) => {
+    const animate = (
+      currentTime: number,
+    ) => {
       const world = worldRef.current
 
       if (!world) {
@@ -51,22 +86,44 @@ function App() {
       }
 
       if (running) {
-        const interval = 1000 / simulationSpeed
+        const interval =
+          1000 / simulationSpeed
 
-        if (currentTime - lastSimulationTime >= interval) {
+        if (
+          currentTime -
+            lastSimulationTime >=
+          interval
+        ) {
           world.update()
 
-          lastSimulationTime = currentTime
+          lastSimulationTime =
+            currentTime
 
-          setPopulation(world.blobs.length)
-          setFoodCount(world.foods.length)
+          setPopulation(
+            world.blobs.length,
+          )
+
+          setFoodCount(
+            world.foods.length,
+          )
+
           setTick(world.tick)
+
           setBirths(world.births)
+
           setDeaths(world.deaths)
 
-          setAverageSpeed(world.getAverageSpeed())
-          setAverageVision(world.getAverageVision())
-          setAverageMetabolism(world.getAverageMetabolism())
+          setAverageSpeed(
+            world.getAverageSpeed(),
+          )
+
+          setAverageVision(
+            world.getAverageVision(),
+          )
+
+          setAverageMetabolism(
+            world.getAverageMetabolism(),
+          )
         }
       }
 
@@ -76,39 +133,55 @@ function App() {
         WORLD_WIDTH,
         WORLD_HEIGHT,
       )
+
       for (
-  const region of world.environment.regions
-) {
-  if (region.type === 'meadow') {
-    context.fillStyle = '#e8f5e9'
-  } else if (region.type === 'barren') {
-    context.fillStyle = '#f5f5f5'
-  } else {
-    context.fillStyle = '#e8f0f0'
-  }
+        const region of
+        world.environment.regions
+      ) {
+        if (
+          region.type === 'meadow'
+        ) {
+          context.fillStyle =
+            '#e8f5e9'
+        } else if (
+          region.type === 'barren'
+        ) {
+          context.fillStyle =
+            '#f5f5f5'
+        } else {
+          context.fillStyle =
+            '#e8f0f0'
+        }
 
-  context.fillRect(
-    region.x,
-    region.y,
-    region.width,
-    region.height,
-  )
-}
-context.strokeStyle = '#cccccc'
-context.lineWidth = 1
+        context.fillRect(
+          region.x,
+          region.y,
+          region.width,
+          region.height,
+        )
+      }
 
-for (
-  const region of world.environment.regions
-) {
-  context.strokeRect(
-    region.x,
-    region.y,
-    region.width,
-    region.height,
-  )
-}
+      context.strokeStyle =
+        '#cccccc'
+
+      context.lineWidth = 1
+
+      for (
+        const region of
+        world.environment.regions
+      ) {
+        context.strokeRect(
+          region.x,
+          region.y,
+          region.width,
+          region.height,
+        )
+      }
 
       for (const food of world.foods) {
+        context.fillStyle =
+          '#c8f7c5'
+
         context.beginPath()
 
         context.arc(
@@ -123,60 +196,186 @@ for (
       }
 
       for (const blob of world.blobs) {
-  const radius = 4 + blob.genome.speed * 2
+        const radius =
+          4 +
+          blob.genome.speed * 2
 
-  const region = world.getRegionAt(
-    blob.x,
-    blob.y,
-  )
+        const region =
+          world.getRegionAt(
+            blob.x,
+            blob.y,
+          )
 
-  if (region?.type === 'swamp') {
-    context.fillStyle = '#6b8e6b'
-  } else if (region?.type === 'barren') {
-    context.fillStyle = '#777777'
-  } else {
-    context.fillStyle = '#222222'
-  }
+        if (
+          region?.type === 'swamp'
+        ) {
+          context.fillStyle =
+            '#6b8e6b'
+        } else if (
+          region?.type === 'barren'
+        ) {
+          context.fillStyle =
+            '#777777'
+        } else {
+          context.fillStyle =
+            '#222222'
+        }
 
-  context.beginPath()
+        context.beginPath()
 
-  context.arc(
-    blob.x,
-    blob.y,
-    radius,
-    0,
-    Math.PI * 2,
-  )
+        context.arc(
+          blob.x,
+          blob.y,
+          radius,
+          0,
+          Math.PI * 2,
+        )
 
-  context.fill()
-}
+        context.fill()
 
-      animationFrameId = requestAnimationFrame(animate)
+        if (
+          blob.id ===
+          selectedBlobId
+        ) {
+          context.beginPath()
+
+          context.arc(
+            blob.x,
+            blob.y,
+            radius + 5,
+            0,
+            Math.PI * 2,
+          )
+
+          context.strokeStyle =
+            '#ff6b00'
+
+          context.lineWidth = 3
+
+          context.stroke()
+        }
+      }
+
+      animationFrameId =
+        requestAnimationFrame(
+          animate,
+        )
     }
 
-    animationFrameId = requestAnimationFrame(animate)
+    animationFrameId =
+      requestAnimationFrame(animate)
 
     return () => {
-      cancelAnimationFrame(animationFrameId)
+      cancelAnimationFrame(
+        animationFrameId,
+      )
     }
-  }, [running, simulationSpeed])
+  }, [
+    running,
+    simulationSpeed,
+    selectedBlobId,
+  ])
+
+  const handleCanvasClick = (
+    event: MouseEvent<HTMLCanvasElement>,
+  ) => {
+    const canvas = canvasRef.current
+
+    if (!canvas) {
+      return
+    }
+
+    const rect =
+      canvas.getBoundingClientRect()
+
+    const scaleX =
+      WORLD_WIDTH / rect.width
+
+    const scaleY =
+      WORLD_HEIGHT / rect.height
+
+    const x =
+      (event.clientX - rect.left) *
+      scaleX
+
+    const y =
+      (event.clientY - rect.top) *
+      scaleY
+
+    const world = worldRef.current
+
+    if (!world) {
+      return
+    }
+
+    let closestBlobId:
+      number | null = null
+
+    let closestDistance =
+      Infinity
+
+    for (const blob of world.blobs) {
+      const dx = blob.x - x
+      const dy = blob.y - y
+
+      const distance =
+        Math.sqrt(
+          dx * dx +
+          dy * dy,
+        )
+
+      if (
+        distance < 14 &&
+        distance <
+          closestDistance
+      ) {
+        closestDistance =
+          distance
+
+        closestBlobId =
+          blob.id
+      }
+    }
+
+    setSelectedBlobId(
+      closestBlobId,
+    )
+  }
 
   const resetWorld = () => {
-    const newWorld = new World(
-      DEFAULT_ENVIRONMENT,
-      50,
+    const newWorld =
+      new World(
+        DEFAULT_ENVIRONMENT,
+        50,
+      )
+
+    worldRef.current =
+      newWorld
+
+    setSelectedBlobId(null)
+
+    setPopulation(
+      newWorld.blobs.length,
     )
 
-    worldRef.current = newWorld
+    setFoodCount(
+      newWorld.foods.length,
+    )
 
-    setPopulation(newWorld.blobs.length)
-    setFoodCount(newWorld.foods.length)
     setTick(newWorld.tick)
+
     setBirths(newWorld.births)
+
     setDeaths(newWorld.deaths)
 
-    setAverageSpeed(newWorld.getAverageSpeed())
-    setAverageVision(newWorld.getAverageVision())
+    setAverageSpeed(
+      newWorld.getAverageSpeed(),
+    )
+
+    setAverageVision(
+      newWorld.getAverageVision(),
+    )
+
     setAverageMetabolism(
       newWorld.getAverageMetabolism(),
     )
@@ -197,13 +396,19 @@ for (
         <div className="controls">
           <button
             onClick={() =>
-              setRunning((value) => !value)
+              setRunning(
+                (value) => !value,
+              )
             }
           >
-            {running ? 'Pause' : 'Run'}
+            {running
+              ? 'Pause'
+              : 'Run'}
           </button>
 
-          <button onClick={resetWorld}>
+          <button
+            onClick={resetWorld}
+          >
             Reset
           </button>
 
@@ -217,7 +422,9 @@ for (
               value={simulationSpeed}
               onChange={(event) =>
                 setSimulationSpeed(
-                  Number(event.target.value),
+                  Number(
+                    event.target.value,
+                  ),
                 )
               }
             />
@@ -229,27 +436,44 @@ for (
 
       <section className="stats">
         <div>
-          <strong>{population}</strong>
-          <span>Population</span>
+          <strong>
+            {population}
+          </strong>
+
+          <span>
+            Population
+          </span>
         </div>
 
         <div>
-          <strong>{foodCount}</strong>
-          <span>Food</span>
+          <strong>
+            {foodCount}
+          </strong>
+
+          <span>
+            Food
+          </span>
         </div>
 
         <div>
           <strong>{tick}</strong>
+
           <span>Ticks</span>
         </div>
 
         <div>
-          <strong>{births}</strong>
+          <strong>
+            {births}
+          </strong>
+
           <span>Births</span>
         </div>
 
         <div>
-          <strong>{deaths}</strong>
+          <strong>
+            {deaths}
+          </strong>
+
           <span>Deaths</span>
         </div>
       </section>
@@ -258,27 +482,52 @@ for (
         ref={canvasRef}
         width={WORLD_WIDTH}
         height={WORLD_HEIGHT}
+        onClick={handleCanvasClick}
+      />
+
+      <CreaturePanel
+        blob={
+          selectedBlobId === null
+            ? null
+            : worldRef.current?.getBlobById(
+                selectedBlobId,
+              ) ?? null
+        }
+        onClose={() =>
+          setSelectedBlobId(null)
+        }
       />
 
       <section className="traits">
-        <h2>Population Traits</h2>
+        <h2>
+          Population Traits
+        </h2>
 
         <div>
-          <span>Average speed</span>
+          <span>
+            Average speed
+          </span>
+
           <strong>
             {averageSpeed.toFixed(2)}
           </strong>
         </div>
 
         <div>
-          <span>Average vision</span>
+          <span>
+            Average vision
+          </span>
+
           <strong>
             {averageVision.toFixed(0)}
           </strong>
         </div>
 
         <div>
-          <span>Average metabolism</span>
+          <span>
+            Average metabolism
+          </span>
+
           <strong>
             {averageMetabolism.toFixed(3)}
           </strong>

@@ -18,6 +18,7 @@ export class World {
   deaths: number
 
   readonly environment: Environment
+  private nextBlobId: number
 
   constructor(
     environment: Environment = DEFAULT_ENVIRONMENT,
@@ -34,6 +35,7 @@ export class World {
     this.tick = 0
     this.births = 0
     this.deaths = 0
+    this.nextBlobId = 1
 
     for (let i = 0; i < initialPopulation; i++) {
       this.addRandomBlob()
@@ -53,9 +55,12 @@ export class World {
     }
 
     const blob = new Blob(
+      this.nextBlobId,
       Math.random() * this.width,
       Math.random() * this.height,
     )
+
+    this.nextBlobId += 1
 
     this.blobs.push(blob)
   }
@@ -86,16 +91,16 @@ export class World {
 
     for (const blob of this.blobs) {
       const region = this.getRegionAt(
-  blob.x,
-  blob.y,
-)
+        blob.x,
+        blob.y,
+      )
 
-blob.update(
-  this.width,
-  this.height,
-  this.foods,
-  region?.energyCostMultiplier ?? 1,
-)
+      blob.update(
+        this.width,
+        this.height,
+        this.foods,
+        region?.energyCostMultiplier ?? 1,
+      )
 
       if (
         blob.canReproduce() &&
@@ -105,9 +110,12 @@ blob.update(
       ) {
         offspring.push(
           blob.reproduce(
+            this.nextBlobId,
             this.environment.mutationStrength,
           ),
         )
+
+        this.nextBlobId += 1
       }
     }
 
@@ -118,10 +126,9 @@ blob.update(
     const populationBeforeDeath =
       this.blobs.length
 
-    this.blobs =
-      this.blobs.filter((blob) =>
-        blob.isAlive(),
-      )
+    this.blobs = this.blobs.filter(
+      (blob) => blob.isAlive(),
+    )
 
     this.deaths +=
       populationBeforeDeath -
@@ -168,63 +175,76 @@ blob.update(
         0,
       ) / this.blobs.length
     )
-    
   }
-getRegionAt(x: number, y: number): Region | null {
-  return (
-    this.environment.regions.find(
-      (region) =>
-        x >= region.x &&
-        x < region.x + region.width &&
-        y >= region.y &&
-        y < region.y + region.height,
-    ) ?? null
-  )
-}
+
+  getRegionAt(
+    x: number,
+    y: number,
+  ): Region | null {
+    return (
+      this.environment.regions.find(
+        (region) =>
+          x >= region.x &&
+          x < region.x + region.width &&
+          y >= region.y &&
+          y < region.y + region.height,
+      ) ?? null
+    )
+  }
+
+  getBlobById(id: number) {
+    return (
+      this.blobs.find(
+        (blob) => blob.id === id,
+      ) ?? null
+    )
+  }
+
   private spawnFood() {
-  if (
-    Math.random() >=
-    this.environment.foodSpawnChance
+    if (
+      Math.random() >=
+      this.environment.foodSpawnChance
+    ) {
+      return
+    }
+
+    const region =
+      this.environment.regions[
+        Math.floor(
+          Math.random() *
+            this.environment.regions.length,
+        )
+      ]
+
+    const adjustedChance =
+      Math.random() <
+      region.foodSpawnMultiplier
+
+    if (!adjustedChance) {
+      return
+    }
+
+    this.addFoodToRegion(region)
+  }
+
+  private addFoodToRegion(
+    region: Region,
   ) {
-    return
+    if (
+      this.foods.length >=
+      this.environment.maxFood
+    ) {
+      return
+    }
+
+    const food = new Food(
+      region.x +
+        Math.random() * region.width,
+      region.y +
+        Math.random() * region.height,
+      this.environment.foodEnergy,
+    )
+
+    this.foods.push(food)
   }
-
-  const region =
-    this.environment.regions[
-      Math.floor(
-        Math.random() *
-          this.environment.regions.length,
-      )
-    ]
-
-  const adjustedChance =
-    Math.random() <
-    region.foodSpawnMultiplier
-
-  if (!adjustedChance) {
-    return
-  }
-
-  this.addFoodToRegion(region)
-}
-private addFoodToRegion(region: Region) {
-  if (
-    this.foods.length >=
-    this.environment.maxFood
-  ) {
-    return
-  }
-
-  const food = new Food(
-    region.x +
-      Math.random() * region.width,
-
-    region.y +
-      Math.random() * region.height,
-
-    this.environment.foodEnergy,
-  )
-
-  this.foods.push(food)
-}
 }

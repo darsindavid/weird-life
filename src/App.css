@@ -117,3 +117,113 @@ canvas {
 .traits strong {
   font-size: 1.1rem;
 }
+.creature-panel {
+  width: 800px;
+  max-width: 100%;
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid #222;
+  border-radius: 8px;
+  background: white;
+}
+
+.creature-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.creature-panel-header h2 {
+  margin: 4px 0 0;
+}
+
+.creature-panel-header button {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: #777;
+}
+
+.creature-panel section {
+  margin-top: 18px;
+}
+
+.creature-panel h3 {
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.creature-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.creature-stat span {
+  color: #666;
+}
+
+.creature-stat strong {
+  font-variant-numeric: tabular-nums;
+}
+.creature-panel {
+  width: 800px;
+  max-width: 100%;
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid #222;
+  border-radius: 8px;
+  background: white;
+}
+
+.creature-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.creature-panel-header h2 {
+  margin: 4px 0 0;
+}
+
+.creature-panel-header button {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: #777;
+}
+
+.creature-panel section {
+  margin-top: 18px;
+}
+
+.creature-panel h3 {
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.creature-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.creature-stat span {
+  color: #666;
+}

@@ -6,22 +6,37 @@ import {
 } from './Genome'
 
 export class Blob {
+  readonly id: number
+  readonly parentId: number | null
+  readonly generation: number
+
   x: number
   y: number
   vx: number
   vy: number
+
   energy: number
   age: number
+  children: number
+  foodEaten: number
+
   genome: Genome
 
   private readonly eatingDistance = 8
 
   constructor(
+    id: number,
     x: number,
     y: number,
     genome: Genome = createRandomGenome(),
     energy = 100,
+    parentId: number | null = null,
+    generation = 0,
   ) {
+    this.id = id
+    this.parentId = parentId
+    this.generation = generation
+
     this.x = x
     this.y = y
 
@@ -30,24 +45,32 @@ export class Blob {
 
     this.energy = energy
     this.age = 0
+    this.children = 0
+    this.foodEaten = 0
+
     this.genome = genome
   }
 
   update(
-  width: number,
-  height: number,
-  foods: Food[],
-  energyCostMultiplier = 1,
-) {
+    width: number,
+    height: number,
+    foods: Food[],
+    energyCostMultiplier = 1,
+  ) {
     this.age += 1
 
     this.energy -=
-  this.getEnergyCost() * energyCostMultiplier
+      this.getEnergyCost() *
+      energyCostMultiplier
 
-    const nearestFood = this.findNearestFood(foods)
+    const nearestFood =
+      this.findNearestFood(foods)
 
     if (nearestFood) {
-      this.moveTowards(nearestFood.x, nearestFood.y)
+      this.moveTowards(
+        nearestFood.x,
+        nearestFood.y,
+      )
     } else {
       this.wander()
     }
@@ -55,9 +78,15 @@ export class Blob {
     this.x += this.vx
     this.y += this.vy
 
-    this.handleBoundaries(width, height)
+    this.handleBoundaries(
+      width,
+      height,
+    )
 
-    this.tryToEat(nearestFood, foods)
+    this.tryToEat(
+      nearestFood,
+      foods,
+    )
   }
 
   private getEnergyCost() {
@@ -79,14 +108,25 @@ export class Blob {
     )
   }
 
-  private findNearestFood(foods: Food[]) {
+  private findNearestFood(
+    foods: Food[],
+  ) {
     let nearestFood: Food | null = null
-    let nearestDistance = this.genome.vision
+
+    let nearestDistance =
+      this.genome.vision
 
     for (const food of foods) {
-      const distance = this.distanceTo(food.x, food.y)
+      const distance =
+        this.distanceTo(
+          food.x,
+          food.y,
+        )
 
-      if (distance < nearestDistance) {
+      if (
+        distance <
+        nearestDistance
+      ) {
         nearestDistance = distance
         nearestFood = food
       }
@@ -95,39 +135,60 @@ export class Blob {
     return nearestFood
   }
 
-  private moveTowards(targetX: number, targetY: number) {
+  private moveTowards(
+    targetX: number,
+    targetY: number,
+  ) {
     const dx = targetX - this.x
     const dy = targetY - this.y
-    const distance = Math.sqrt(dx * dx + dy * dy)
+
+    const distance =
+      Math.sqrt(
+        dx * dx +
+        dy * dy,
+      )
 
     if (distance === 0) {
       return
     }
 
-    this.vx += (dx / distance) * 0.05
-    this.vy += (dy / distance) * 0.05
+    this.vx +=
+      (dx / distance) * 0.05
+
+    this.vy +=
+      (dy / distance) * 0.05
 
     this.limitSpeed()
   }
 
   private wander() {
-    this.vx += (Math.random() - 0.5) * 0.08
-    this.vy += (Math.random() - 0.5) * 0.08
+    this.vx +=
+      (Math.random() - 0.5) * 0.08
+
+    this.vy +=
+      (Math.random() - 0.5) * 0.08
 
     this.limitSpeed()
   }
 
   private limitSpeed() {
-    const speed = Math.sqrt(
-      this.vx * this.vx + this.vy * this.vy,
-    )
+    const speed =
+      Math.sqrt(
+        this.vx * this.vx +
+        this.vy * this.vy,
+      )
 
-    if (speed > this.genome.speed) {
+    if (
+      speed >
+      this.genome.speed
+    ) {
       this.vx =
-        (this.vx / speed) * this.genome.speed
+        (this.vx / speed) *
+        this.genome.speed
 
       this.vy =
-        (this.vy / speed) * this.genome.speed
+        (this.vy / speed) *
+        this.genome.speed
     }
   }
 
@@ -135,19 +196,33 @@ export class Blob {
     width: number,
     height: number,
   ) {
-    if (this.x <= 0 || this.x >= width) {
+    if (
+      this.x <= 0 ||
+      this.x >= width
+    ) {
       this.vx *= -1
+
       this.x = Math.max(
         0,
-        Math.min(this.x, width),
+        Math.min(
+          this.x,
+          width,
+        ),
       )
     }
 
-    if (this.y <= 0 || this.y >= height) {
+    if (
+      this.y <= 0 ||
+      this.y >= height
+    ) {
       this.vy *= -1
+
       this.y = Math.max(
         0,
-        Math.min(this.y, height),
+        Math.min(
+          this.y,
+          height,
+        ),
       )
     }
   }
@@ -161,15 +236,25 @@ export class Blob {
     }
 
     if (
-      this.distanceTo(food.x, food.y) <=
+      this.distanceTo(
+        food.x,
+        food.y,
+      ) <=
       this.eatingDistance
     ) {
-      this.energy += food.energy
+      this.energy +=
+        food.energy
 
-      const foodIndex = foods.indexOf(food)
+      this.foodEaten += 1
+
+      const foodIndex =
+        foods.indexOf(food)
 
       if (foodIndex !== -1) {
-        foods.splice(foodIndex, 1)
+        foods.splice(
+          foodIndex,
+          1,
+        )
       }
     }
   }
@@ -181,29 +266,48 @@ export class Blob {
     )
   }
 
-  reproduce(mutationStrength: number) {
-    const offspringEnergy = this.energy / 2
+  reproduce(
+    id: number,
+    mutationStrength: number,
+  ) {
+    const offspringEnergy =
+      this.energy / 2
 
-    this.energy = offspringEnergy
+    this.energy =
+      offspringEnergy
 
-    const offspringGenome = mutateGenome(
-      this.genome,
-      mutationStrength,
-    )
+    this.children += 1
+
+    const offspringGenome =
+      mutateGenome(
+        this.genome,
+        mutationStrength,
+      )
 
     return new Blob(
-      this.x + (Math.random() - 0.5) * 10,
-      this.y + (Math.random() - 0.5) * 10,
+      id,
+      this.x +
+        (Math.random() - 0.5) * 10,
+      this.y +
+        (Math.random() - 0.5) * 10,
       offspringGenome,
       offspringEnergy,
+      this.id,
+      this.generation + 1,
     )
   }
 
-  private distanceTo(x: number, y: number) {
+  private distanceTo(
+    x: number,
+    y: number,
+  ) {
     const dx = x - this.x
     const dy = y - this.y
 
-    return Math.sqrt(dx * dx + dy * dy)
+    return Math.sqrt(
+      dx * dx +
+      dy * dy,
+    )
   }
 
   isAlive() {
